@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Localizador IP - Dashboard</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 30px }
+      table { width: 100%; border-collapse: collapse }
+      th, td { padding: 8px; border: 1px solid #ddd }
+    </style>
+  </head>
+  <body>
+    <h1>Dashboard</h1>
+    <p><a href="/">New analysis</a></p>
+    <table>
+      <thead>
+        <tr><th>File</th><th>IP</th><th>Summary</th><th>Analyzed at</th><th>Download</th></tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td>{{ e.file }}</td>
+          <td>{{ e.ip }}</td>
+          <td>{{ e.summary }}</td>
+          <td>{{ e.analyzed_at }}</td>
+          <td><a href="/download/{{ e.file }}">JSON</a> | <a href="/download/{{ e.file.replace('.json', '.txt') }}">Report</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Localizador IP - Analyzer</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 30px }
+      .form { max-width:600px }
+    </style>
+  </head>
+  <body>
+    <h1>Localizador IP - Web</h1>
+    <form class="form" action="/analyze" method="post">
+      <label>IP to analyze<br><input name="ip" required></label><br><br>
+      <label>Case ID<br><input name="case_id"></label><br><br>
+      <label>Reporter (name/email)<br><input name="reporter"></label><br><br>
+      <button type="submit">Analyze</button>
+    </form>
+    <p><a href="/dashboard">View dashboard / results</a></p>
+  </body>
+</html>
