@@ -1,0 +1,35 @@
+{
+  "ip": "46.110.217.29",
+  "analyzed_at": "2025-11-26T04:30:15.968207",
+  "ip_api": {
+    "status": "success",
+    "country": "United States",
+    "countryCode": "US",
+    "region": "OK",
+    "regionName": "Oklahoma",
+    "city": "Broken Arrow",
+    "zip": "74012",
+    "lat": 36.0432,
+    "lon": -95.8072,
+    "timezone": "America/Chicago",
+    "isp": "Metronet",
+    "org": "Metronet",
+    "as": "AS30600 Metronet",
+    "query": "46.110.217.29"
+  },
+  "reverse_dns": {
+    "hostname": "46-110-217-29.brarokaa.metronetinc.net"
+  },
+  "ipinfo": {
+    "ip": "46.110.217.29",
+    "hostname": "46-110-217-29.brarokaa.metronetinc.net",
+    "city": "Broken Arrow",
+    "region": "Oklahoma",
+    "country": "US",
+    "loc": "36.0447,-95.8079",
+    "org": "AS30600 Metronet",
+    "postal": "74012",
+    "timezone": "America/Chicago",
+    "readme": "https://ipinfo.io/missingauth"
+  }
+}

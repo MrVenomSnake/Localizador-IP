@@ -59,3 +59,21 @@ Conveniencia — script PowerShell para preparar entorno y ejecutar tests:
 Notas:
 - Respeta siempre la legalidad y privacidad cuando investigues accesos o IPs.
 - Para funciones avanzadas de reputación (AbuseIPDB, VirusTotal) necesitarás registrarte y usar sus APIs.
+ 
+## AbuseIPDB integration
+
+You can get additional reputation information from AbuseIPDB by creating a free account and generating an API key. The script accepts the key via the CLI flag `--abuse-key` or via the environment variable `ABUSEIPDB_API_KEY`.
+
+Examples:
+
+```powershell
+# Export a key for the current session
+$env:ABUSEIPDB_API_KEY = 'your_api_key_here'
+
+# Or pass directly on the command line
+python .\ip_analyzer.py 8.8.8.8 --json --abuse-key your_api_key_here
+```
+
+## Legal / ethics note
+
+This tool only collects public information from IP reputation APIs, geolocation data and reverse DNS. It does NOT attempt to access devices (no port scanning, no login attempts, no web requests to router admin panels). Do not attempt to access routers or devices you do not own or have explicit permission to probe — doing so may be illegal.

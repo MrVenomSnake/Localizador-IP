@@ -10,6 +10,7 @@ import socket
 import argparse
 import ipaddress
 import logging
+import os
 from datetime import datetime
 
 try:
@@ -66,6 +67,99 @@ def gather_ip_info(ip: str) -> dict:
         info['ipinfo'] = {'error': str(e)}
 
     return info
+
+
+def query_abuseipdb(ip: str, api_key: str | None = None, max_age_days: int = 90) -> dict:
+    """Query AbuseIPDB for reputation if api_key is provided.
+
+    Returns a dict with API response, or {'error': <msg>} when missing or failing.
+    """
+    if not api_key:
+        return {'error': 'no_api_key'}
+
+    if requests is None:
+        return {'error': 'requests_missing'}
+
+    url = 'https://api.abuseipdb.com/api/v2/check'
+    headers = {'Key': api_key, 'Accept': 'application/json'}
+    params = {'ipAddress': ip, 'maxAgeInDays': max_age_days}
+    try:
+        r = requests.get(url, headers=headers, params=params, timeout=10)
+        if r.status_code == 200:
+            return r.json()
+        return {'error': f'status_{r.status_code}'}
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def query_virustotal(ip: str, api_key: str | None = None) -> dict:
+    """Query VirusTotal v3 for IP reputation if api_key provided.
+
+    Returns parsed key metrics or error dict when missing/failing.
+    """
+    if not api_key:
+        return {'error': 'no_api_key'}
+
+    if requests is None:
+        return {'error': 'requests_missing'}
+
+    url = f'https://www.virustotal.com/api/v3/ip_addresses/{ip}'
+    headers = {'x-apikey': api_key}
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            # Pull some common fields if present
+            attributes = data.get('data', {}).get('attributes', {})
+            last_analysis_stats = attributes.get('last_analysis_stats')
+            return {'status': 'ok', 'attributes': attributes, 'last_analysis_stats': last_analysis_stats}
+        return {'error': f'status_{r.status_code}'}
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def parse_router_likelihood(info: dict) -> dict:
+    """Heurística simple para indicar si la IP parece un router/gateway o residencial/datacenter.
+
+    No intenta acceder a dispositivos; solo analiza campos devueltos por APIs públicas.
+    """
+    reasons = []
+    isp = None
+    hostname = None
+    if 'ip_api' in info and isinstance(info['ip_api'], dict):
+        isp = info['ip_api'].get('isp') or info['ip_api'].get('org')
+    if 'ipinfo' in info and isinstance(info['ipinfo'], dict):
+        hostname = info['ipinfo'].get('hostname')
+        isp = isp or info['ipinfo'].get('org')
+    if 'reverse_dns' in info and isinstance(info['reverse_dns'], dict):
+        hostname = hostname or info['reverse_dns'].get('hostname')
+
+    hostname_lower = (hostname or '').lower()
+    isp_lower = (isp or '').lower()
+
+    # Common router-ish hostname tokens
+    router_tokens = ['router', 'gateway', 'cpe', 'home', 'user', 'dsl', 'brarokaa', 'ppp', 'client']
+    for t in router_tokens:
+        if t in hostname_lower:
+            reasons.append(f"hostname contains '{t}'")
+            break
+
+    # Datacenter indicators
+    datacenter_tokens = ['amazon', 'amazonaws', 'digitalocean', 'linode', 'hetzner', 'ovh', 'vultr', 'google', 'microsoft']
+    for t in datacenter_tokens:
+        if t in isp_lower:
+            reasons.append(f"isp/org contains datacenter token '{t}'")
+            break
+
+    # Simple classification
+    if any(tok in isp_lower for tok in datacenter_tokens):
+        classification = 'datacenter'
+    elif reasons and any('hostname' in r for r in reasons):
+        classification = 'residential/router'
+    else:
+        classification = 'likely_residential_or_isp'
+
+    return {'classification': classification, 'reasons': reasons, 'isp': isp, 'hostname': hostname}
 
 def analizar_ip(ip_address):
     """
@@ -166,6 +260,8 @@ def main():
     parser.add_argument('--log-file', '-l', help='Guardar logs en archivo especificado')
     parser.add_argument('--json', action='store_true', help='Emitir salida en JSON (para uso programático)')
     parser.add_argument('--output-file', '-o', help='Guardar resultado (texto o JSON si --json) en archivo')
+    parser.add_argument('--abuse-key', help='AbuseIPDB API key (si no se pone, buscará env ABUSEIPDB_API_KEY)')
+    parser.add_argument('--vt-key', help='VirusTotal API key (si no se pone, buscará env VIRUSTOTAL_API_KEY)')
     args = parser.parse_args()
 
     if args.ip:
@@ -225,6 +321,37 @@ def main():
                 return info
 
             result = gather_ip_info(ip)
+
+            # add analysis heuristics
+            try:
+                result['analysis'] = parse_router_likelihood(result)
+            except Exception:
+                result['analysis'] = {'error': 'analysis_failure'}
+
+            # AbuseIPDB integration (optional)
+            abuse_key = args.abuse_key or os.environ.get('ABUSEIPDB_API_KEY')
+            if abuse_key:
+                result['abuseipdb'] = query_abuseipdb(ip, abuse_key)
+
+            vt_key = args.vt_key or os.environ.get('VIRUSTOTAL_API_KEY')
+            if vt_key:
+                result['virustotal'] = query_virustotal(ip, vt_key)
+
+            # simple combined risk summary
+            try:
+                risk_score = 0
+                if 'abuseipdb' in result and isinstance(result['abuseipdb'], dict):
+                    data = result['abuseipdb'].get('data') or {}
+                    conf = data.get('abuseConfidenceScore')
+                    if isinstance(conf, (int, float)):
+                        risk_score += int(conf / 10)
+                if 'virustotal' in result and isinstance(result['virustotal'], dict):
+                    last = result['virustotal'].get('last_analysis_stats') or {}
+                    malicious = last.get('malicious', 0) or 0
+                    risk_score += 1 if malicious > 0 else 0
+                result['summary'] = {'risk_score_estimate': risk_score}
+            except Exception:
+                result['summary'] = {'error': 'summary_failure'}
 
             if args.output_file:
                 # guardar JSON en archivo
