@@ -107,3 +107,24 @@ python .\ip_analyzer.py 8.8.8.8 --json --output-file evidence.json
 6. Report to providers: if you confirm abuse, use AbuseIPDB to file a report and contact the ISP/hosting provider if possible.
 
 Always follow legal and ethical guidelines when investigating or reporting suspected scammers.
+
+## Web interface (lightweight)
+
+This repo now includes a small Flask web interface to run analyses and view/download results. It stores JSON analysis outputs and text reports in the `data/` directory.
+
+Run the app in development (local machine):
+
+```powershell
+# Windows PowerShell - from repo root
+.\.venv\Scripts\Activate.ps1
+python web_app.py
+
+# By default Flask will listen on http://127.0.0.1:5000
+```
+
+Then point your browser to http://127.0.0.1:5000 — you can submit IPs, add case metadata, see the dashboard and download JSON/reports.
+
+SecurityTrails and abuse.ch
+--------------------------
+SecurityTrails optional integration uses `SEC_TRAILS_API_KEY` environment variable. abuse.ch checks are passive lookups and do not require keys; the web UI will include these feeds in the generated JSON when available.
+
