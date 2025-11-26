@@ -77,3 +77,33 @@ python .\ip_analyzer.py 8.8.8.8 --json --abuse-key your_api_key_here
 ## Legal / ethics note
 
 This tool only collects public information from IP reputation APIs, geolocation data and reverse DNS. It does NOT attempt to access devices (no port scanning, no login attempts, no web requests to router admin panels). Do not attempt to access routers or devices you do not own or have explicit permission to probe — doing so may be illegal.
+
+## VirusTotal integration
+
+You can also query VirusTotal (v3) for additional intelligence about an IP. Get an API key from VirusTotal and pass it with the CLI flag `--vt-key` or via the environment variable `VIRUSTOTAL_API_KEY`.
+
+Example:
+
+```powershell
+# Set environment variable for session
+$env:VIRUSTOTAL_API_KEY = 'your_virustotal_key'
+python .\ip_analyzer.py 8.8.8.8 --json --output-file vt_out.json
+```
+
+VirusTotal returns aggregated analysis results from many engines (malicious/suspicious counts, community verdicts). Use these counts together with AbuseIPDB's confidence score to get a broad view of risk.
+
+## How to investigate a scammer IP (suggested steps)
+
+1. Start with `--json` output and save it to a file for evidence-tracking:
+
+```powershell
+python .\ip_analyzer.py 8.8.8.8 --json --output-file evidence.json
+```
+
+2. Check AbuseIPDB's `abuseConfidenceScore` — higher values indicate repeated abusive reports (spam, scam, etc.).
+3. Check VirusTotal's `last_analysis_stats` — if `malicious` or `suspicious` > 0, treat with caution.
+4. Cross-check reverse DNS and ISP/org — a residential ISP + home-sounding hostname suggests a consumer device; datacenter ISP indicates likely an infrastructure host.
+5. Aggregate and document: save timestamps, API responses and relevant headers as evidence. Keep a copy of `evidence.json` externally for reporting.
+6. Report to providers: if you confirm abuse, use AbuseIPDB to file a report and contact the ISP/hosting provider if possible.
+
+Always follow legal and ethical guidelines when investigating or reporting suspected scammers.
