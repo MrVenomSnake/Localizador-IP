@@ -1,11 +1,10 @@
 IP Analysis Report - 47.144.231.116
-Generated: 2025-11-26
+Generated: 2025-11-26T07:37:12.935644
 
 SUMMARY
 -------
-IP: 47.144.231.116
 Classification: likely_residential_or_isp
-Risk score estimate: 0 (no abuse/vt data available)
+Risk score estimate: 0
 
 GEO & NETWORK
 -------------
@@ -17,24 +16,14 @@ ISP: Frontier Communications Corporation
 Organization: Frontier Communications Solutions
 AS: AS5650 Frontier Communications of America, Inc.
 
-REVERSE DNS / HOST
-------------------
-Hostname (reverse DNS): 47-144-231-116.lsan.ca.frontiernet.net
-IPinfo hostname: 47-144-231-116.lsan.ca.frontiernet.net
+RDAP / Abuse contacts
+----------------------
 
-RDAP (registration) - summary
------------------------------
-No RDAP full lookup available in this text summary; use JSON/rdap result for details.
+ABUSEIPDB
+--------
+abuseConfidenceScore: 0
+Reports: 0
 
-NOTES & NEXT STEPS
-------------------
-- No AbuseIPDB or VirusTotal API keys were available; these integrations (AbuseIPDB and VirusTotal) provide additional signals (abuseConfidenceScore, VT engines results) which can raise the risk score.
-- Recommendation: if you suspect abuse, collect the evidence JSON (already saved) and report the IP in AbuseIPDB and/or contact the ISP abuse desk with the evidence.
-- Do NOT attempt active access to devices (no port scans or login attempts) without explicit permission.
-
-EVIDENCE FILES
---------------
-resultado_47.144.231.116.json  (contains raw API/lookup outputs)
-
-
-Prepared by Localizador-IP script (no active probing performed)
+VIRUSTOTAL
+---------
+{'malicious': 0, 'suspicious': 0, 'undetected': 95, 'harmless': 0, 'timeout': 0}
