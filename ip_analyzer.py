@@ -66,7 +66,79 @@ def gather_ip_info(ip: str) -> dict:
     except Exception as e:
         info['ipinfo'] = {'error': str(e)}
 
+    # RDAP lookup (passive registration data)
+    try:
+        info['rdap'] = query_rdap(ip)
+    except Exception as e:
+        info['rdap'] = {'error': str(e)}
+
+    # DNSBL checks (passive)
+    try:
+        info['dnsbl'] = check_dnsbl(ip)
+    except Exception as e:
+        info['dnsbl'] = {'error': str(e)}
+
     return info
+
+
+
+def query_rdap(ip: str) -> dict:
+    """Try RDAP endpoints for passive registration/ownership data.
+
+    Returns the first successful JSON response from known RIR RDAP endpoints or
+    an {'error': ...} dict on failure.
+    """
+    if requests is None:
+        return {'error': 'requests_missing'}
+
+    rdap_endpoints = [
+        f'https://rdap.arin.net/registry/ip/{ip}',
+        f'https://rdap.db.ripe.net/ip/{ip}',
+        f'https://rdap.apnic.net/ip/{ip}',
+        f'https://rdap.lacnic.net/rdap/ip/{ip}',
+        f'https://rdap.afrinic.net/rdap/ip/{ip}',
+    ]
+
+    for url in rdap_endpoints:
+        try:
+            r = requests.get(url, timeout=8)
+            if r.status_code == 200:
+                return {'url': url, 'data': r.json()}
+        except Exception as e:
+            # continue to next endpoint
+            continue
+
+    return {'error': 'no_rdap_response'}
+
+
+def check_dnsbl(ip: str) -> dict:
+    """Check a few common DNSBLs to see if IP is listed (passive, DNS lookups only).
+
+    Returns a dict with 'listed': [bl1, bl2...] or empty list if not listed or on error.
+    """
+    bls = [
+        'zen.spamhaus.org',
+        'bl.spamcop.net',
+        'dnsbl.sorbs.net',
+    ]
+    try:
+        parts = ip.split('.')
+        if len(parts) != 4:
+            return {'error': 'not_ipv4'}
+        rev = '.'.join(reversed(parts))
+        listed = []
+        for bl in bls:
+            try:
+                # query e.g. 1.2.3.4.zen.spamhaus.org
+                lookup = f"{rev}.{bl}"
+                # socket.gethostbyname will raise if not found
+                resp = socket.gethostbyname(lookup)
+                listed.append({'dnsbl': bl, 'response': resp})
+            except Exception:
+                continue
+        return {'listed': listed}
+    except Exception as e:
+        return {'error': str(e)}
 
 
 def query_abuseipdb(ip: str, api_key: str | None = None, max_age_days: int = 90) -> dict:
