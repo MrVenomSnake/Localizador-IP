@@ -1,0 +1,44 @@
+{
+  "ip": "47.144.231.116",
+  "analyzed_at": "2025-11-26T05:04:19.276059",
+  "ip_api": {
+    "status": "success",
+    "country": "United States",
+    "countryCode": "US",
+    "region": "CA",
+    "regionName": "California",
+    "city": "Murrieta",
+    "zip": "92562",
+    "lat": 33.5631,
+    "lon": -117.2738,
+    "timezone": "America/Los_Angeles",
+    "isp": "Frontier Communications Corporation",
+    "org": "Frontier Communications Solutions",
+    "as": "AS5650 Frontier Communications of America, Inc.",
+    "query": "47.144.231.116"
+  },
+  "reverse_dns": {
+    "hostname": "47-144-231-116.lsan.ca.frontiernet.net"
+  },
+  "ipinfo": {
+    "ip": "47.144.231.116",
+    "hostname": "47-144-231-116.lsan.ca.frontiernet.net",
+    "city": "Murrieta",
+    "region": "California",
+    "country": "US",
+    "loc": "33.5539,-117.2139",
+    "org": "AS5650 Frontier Communications of America, Inc.",
+    "postal": "92564",
+    "timezone": "America/Los_Angeles",
+    "readme": "https://ipinfo.io/missingauth"
+  },
+  "analysis": {
+    "classification": "likely_residential_or_isp",
+    "reasons": [],
+    "isp": "Frontier Communications Corporation",
+    "hostname": "47-144-231-116.lsan.ca.frontiernet.net"
+  },
+  "summary": {
+    "risk_score_estimate": 0
+  }
+}
